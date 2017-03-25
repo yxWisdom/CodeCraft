@@ -110,6 +110,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="cdn.cpp" />
+    <ClCompile Include="deploy.cpp" />
+    <ClCompile Include="GeneticAlgorithm.cpp" />
+    <ClCompile Include="graph.cpp" />
+    <ClCompile Include="io.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="case0.txt" />
+    <Text Include="case1.txt" />
+    <Text Include="case2.txt" />
+    <Text Include="case3.txt" />
+    <Text Include="case4.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="deploy.h" />
+    <ClInclude Include="GenerateIntialSolutions.h" />
+    <ClInclude Include="GeneticAlgorithm.h" />
+    <ClInclude Include="graph.h" />
+    <ClInclude Include="lib_io.h" />
+    <ClInclude Include="lib_time.h" />
+    <ClInclude Include="SmallestCostFlow.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

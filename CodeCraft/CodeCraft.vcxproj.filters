@@ -14,4 +14,61 @@
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="cdn.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="deploy.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneticAlgorithm.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="graph.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="io.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="case0.txt">
+      <Filter>资源文件</Filter>
+    </Text>
+    <Text Include="case1.txt">
+      <Filter>资源文件</Filter>
+    </Text>
+    <Text Include="case2.txt">
+      <Filter>资源文件</Filter>
+    </Text>
+    <Text Include="case3.txt">
+      <Filter>资源文件</Filter>
+    </Text>
+    <Text Include="case4.txt">
+      <Filter>资源文件</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="deploy.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GenerateIntialSolutions.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneticAlgorithm.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="lib_io.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="graph.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="lib_time.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SmallestCostFlow.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>

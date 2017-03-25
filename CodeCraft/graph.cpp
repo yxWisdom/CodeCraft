@@ -35,7 +35,7 @@ Graph::Graph(char * topo[MAX_EDGE_NUM])
 	for (unsigned int i(4 + edgeNum), j(i + needNodeNum); i != j; ++i)
 	{
 		unsigned int node, need;
-		sscanf(topo[i], "%u %u %u", nullptr, node, need);
+		sscanf(topo[i], "%u %u %u", nullptr, &node, &need);
 		Node * thisNode(nodes[node].get());
 		thisNode->isNeed = true;
 		thisNode->need = need;

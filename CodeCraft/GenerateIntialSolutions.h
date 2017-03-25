@@ -4,10 +4,15 @@
 
 namespace GenerateIntialSolutions
 {
-	std::vector<BoolTable> getIntialSolutions(const Graph &g);
+	std::vector<BoolTable> getIntialSolutions(Graph &g);
 
 	namespace SubFun
 	{
-		
+		void pretreat(Graph &g);
+
+		namespace PretreatSubFun
+		{
+
+		};
 	};
 };

@@ -10,7 +10,7 @@ Graph::Graph(char * topo[MAX_EDGE_NUM])
 {
 	unsigned int nodeNum, edgeNum, needNodeNum;
 	sscanf(topo[0], "%u %u %u", &nodeNum, &edgeNum, &needNodeNum);
-	sscanf(topo[2], "%u", this->cost_per_service);
+	sscanf(topo[2], "%u", &(this->cost_per_service));
 
 	// 创建点集
 	for (unsigned int i(0); i != nodeNum; ++i)
@@ -32,13 +32,15 @@ Graph::Graph(char * topo[MAX_EDGE_NUM])
 	}
 
 	// 读取需求点集
-	for (unsigned int i(4 + edgeNum), j(i + needNodeNum); i != j; ++i)
+	for (unsigned int i(4 + edgeNum + 1), j(i + needNodeNum); i != j; ++i)
 	{
-		unsigned int node, need;
-		sscanf(topo[i], "%u %u %u", nullptr, &node, &need);
+		unsigned int order, node, need;
+		sscanf(topo[i], "%u %u %u", &order, &node, &need);
 		Node * thisNode(nodes[node].get());
 		thisNode->isNeed = true;
 		thisNode->need = need;
+
+		needPoints.insert(node);
 	}
 }
 

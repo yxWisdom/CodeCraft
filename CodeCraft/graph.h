@@ -4,6 +4,8 @@
 #include <vector>
 #include <utility>
 #include <map>
+#include <unordered_map>
+#include <unordered_set>
 #include <memory>
 
 struct Edge;
@@ -23,15 +25,24 @@ struct Edge
 	std::pair<Node *, Node *> nodes = std::make_pair(nullptr, nullptr);
 };
 
+struct NeedInfo
+{
+	std::unordered_map<unsigned int, unsigned int> maxNeedToNeedPoint;
+	std::unordered_map<unsigned int, unsigned int> ToNeedPoint;
+	std::unordered_map<unsigned int, unsigned int> nextPointOfMinCostRouteToNeedPoint;
+};
+
 struct Node
 {
 	Node() {}
 	Node(unsigned int _id) : id(_id) {}
 	unsigned int id = 0;
-	std::map<int, Edge *> edges;
-	std::map<int, int> needs;
-	unsigned int need = 0;
+	std::unordered_map<int, Edge *> edges;
+	
 	bool isNeed = false;
+	unsigned int need = 0;
+
+	NeedInfo needInfo;
 };
 
 struct Graph
@@ -44,4 +55,6 @@ struct Graph
 	std::vector<std::shared_ptr<Node>> nodes;
 	std::vector<std::shared_ptr<Edge>> edges;
 	unsigned int cost_per_service = 0;
+
+	std::unordered_set<unsigned int> needPoints;
 };

@@ -30,10 +30,8 @@ std::string Solution::to_string() const
 	}
 }
 
-Solution GeneticAlgorithm::generateSolution(const Graph & g)
+Solution GeneticAlgorithm::generateSolution(std::vector<BoolTable> intialSolutions, const Graph & g)
 {
-	std::vector<BoolTable> intialSolutions(GenerateIntialSolutions::getIntialSolutions(g));
-
 	// to do
 
 	return std::move(Solution());

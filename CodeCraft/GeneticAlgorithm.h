@@ -13,7 +13,7 @@ struct Solution
 
 namespace GeneticAlgorithm
 {
-	Solution generateSolution(const Graph &g);
+	Solution generateSolution(std::vector<BoolTable> intialSolutions, const Graph &g);
 
 	namespace SubFun
 	{

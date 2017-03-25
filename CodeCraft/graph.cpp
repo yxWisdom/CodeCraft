@@ -25,10 +25,17 @@ Graph::Graph(char * topo[MAX_EDGE_NUM])
 		sscanf(topo[i], "%u %u %u %u", &node1, &node2, &flow, &costPerFlow);
 
 		Node * pNode1(nodes[node1].get()), *pNode2(nodes[node2].get());
+		Edge *edge1, *edge2;
+
 		edges.push_back(std::shared_ptr<Edge>(new Edge(flow, costPerFlow, pNode1, pNode2)));
-		pNode1->edges.insert(std::make_pair(node2, edges.back().get()));
+		edge1 = edges.back().get();
 		edges.push_back(std::shared_ptr<Edge>(new Edge(flow, costPerFlow, pNode2, pNode1)));
-		pNode2->edges.insert(std::make_pair(node1, edges.back().get()));
+		edge2 = edges.back().get();
+		
+		edge1->reverseEdge = edge2;
+		edge2->reverseEdge = edge1;
+		pNode1->edges.insert(std::make_pair(node2, edge1));
+		pNode2->edges.insert(std::make_pair(node1, edge2));
 	}
 
 	// 读取需求点集

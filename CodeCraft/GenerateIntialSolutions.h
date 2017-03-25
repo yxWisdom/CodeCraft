@@ -9,10 +9,6 @@ namespace GenerateIntialSolutions
 	namespace SubFun
 	{
 		void pretreat(Graph &g);
-
-		namespace PretreatSubFun
-		{
-
-		};
+		void BFSPretreatFrom(Node *bgNode, Graph &g);
 	};
 };

@@ -16,14 +16,15 @@ std::string Solution::to_string() const
 		out << flows.size() << std::endl;
 		out << std::endl;
 
-		for (const Flow &flow : flows)
+		for (std::vector<Flow>::const_iterator currIt(flows.cbegin()), 
+			edIt(flows.cend()); currIt != edIt; ++currIt)
 		{
-			out << flow.serverNodeId << ' ';
-			for (const Edge * edge : flow.edges)
-			{
-				out << edge->nodes.second->id << ' ';
-			}
-			out << flow.flow << std::endl;
+			out << currIt->serverNodeId << ' ';
+			
+			for (std::vector<Edge *>::const_iterator currEdgeIt(currIt->edges.cbegin()),
+				edEdgeIt(currIt->edges.cend()); currEdgeIt != edEdgeIt; ++currEdgeIt)
+				out << (*currEdgeIt)->nodes.second->id << ' ';
+			out << currIt->flow << std::endl;
 		}
 
 		return std::move(out.str());

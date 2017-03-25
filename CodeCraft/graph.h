@@ -22,13 +22,14 @@ struct Edge
 	unsigned int id = 0;
 	unsigned int flow = 0;
 	unsigned int costPerFlow = 0;
+	Edge * reverseEdge;
 	std::pair<Node *, Node *> nodes = std::make_pair(nullptr, nullptr);
 };
 
 struct NeedInfo
 {
-	std::unordered_map<unsigned int, unsigned int> maxNeedToNeedPoint;
-	std::unordered_map<unsigned int, unsigned int> ToNeedPoint;
+	std::unordered_map<unsigned int, unsigned int> maxFlowToNeedPoint;
+	std::unordered_map<unsigned int, unsigned int> minCostOfMaxFlowRouteToNeedPoint;
 	std::unordered_map<unsigned int, unsigned int> nextPointOfMinCostRouteToNeedPoint;
 };
 
@@ -37,7 +38,7 @@ struct Node
 	Node() {}
 	Node(unsigned int _id) : id(_id) {}
 	unsigned int id = 0;
-	std::unordered_map<int, Edge *> edges;
+	std::unordered_map<unsigned int, Edge *> edges;
 	
 	bool isNeed = false;
 	unsigned int need = 0;

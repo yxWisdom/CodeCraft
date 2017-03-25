@@ -30,6 +30,9 @@
     <ClCompile Include="io.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="GenerateIntialSolutions.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="case0.txt">

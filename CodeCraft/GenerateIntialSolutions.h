@@ -8,6 +8,6 @@ namespace GenerateIntialSolutions
 
 	namespace SubFun
 	{
-
+		
 	};
 };

@@ -2,7 +2,7 @@
 #include <iostream>
 #include <sstream>
 
-std::string Solution::to_string() const
+std::string Solution::to_string(const Graph &g) const
 {
 	if (servers.empty())
 	{
@@ -20,10 +20,19 @@ std::string Solution::to_string() const
 			edIt(flows.cend()); currIt != edIt; ++currIt)
 		{
 			out << currIt->serverNodeId << ' ';
-			
-			for (std::vector<Edge *>::const_iterator currEdgeIt(currIt->edges.cbegin()),
-				edEdgeIt(currIt->edges.cend()); currEdgeIt != edEdgeIt; ++currEdgeIt)
-				out << (*currEdgeIt)->nodes.second->id << ' ';
+
+			if (currIt->edges.empty())
+			{
+				for (std::vector<Edge *>::const_iterator currEdgeIt(currIt->edges.cbegin()),
+					edEdgeIt(currIt->edges.cend()); currEdgeIt != edEdgeIt; ++currEdgeIt)
+					out << (*currEdgeIt)->nodes.second->id << ' ';
+				out << currIt->edges.back()->nodes.second->needOrder << ' ';
+			}
+			else 
+			{
+				const Node const *currNode(g.nodes[currIt->serverNodeId].get());
+				out << currNode->needOrder << ' ';
+			}
 			out << currIt->flow << std::endl;
 		}
 

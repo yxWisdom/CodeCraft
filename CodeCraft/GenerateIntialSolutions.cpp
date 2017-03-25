@@ -1,5 +1,6 @@
 #include "GenerateIntialSolutions.h"
 #include <deque>
+#include <algorithm>
 
 std::vector<BoolTable> GenerateIntialSolutions::getIntialSolutions(Graph & g)
 {
@@ -19,11 +20,32 @@ void GenerateIntialSolutions::SubFun::pretreat(Graph & g)
 void GenerateIntialSolutions::SubFun::BFSPretreatFrom(Node *bgNode, Graph &g)
 {
 	unsigned int bgNodeId(bgNode->id);
-	BoolTable hasVisited(g.getNodesBoolTable());
-	hasVisited[bgNodeId] = true;
+	unsigned int maxNeed(bgNode->need);
+	UIntTable nodeDepth(g.getNodesUIntTable());
+
+	nodeDepth[bgNodeId] = 1;
+	NodePreTreatmentInfo &bgNodePreTreatInfo(bgNode->preTreatInfo);
+	bgNodePreTreatInfo.maxFlowToNeedPoint.insert(std::make_pair(bgNodeId, maxNeed));
+	bgNodePreTreatInfo.minCostOfMaxFlowToNeedPoint.insert(std::make_pair(bgNodeId, 0));
 
 	std::deque<Node *> nodes;
+	unsigned int depth(2), thisDepth(1);
 	while (!nodes.empty())
 	{
+		Node &currNode(*nodes.front());
+		nodes.pop_front();
+
+		NodePreTreatmentInfo &currNodePreTreatInfo(currNode.preTreatInfo);
+		for (std::unordered_map<unsigned int, Edge *>::const_iterator currIt(currNode.edges.cbegin()),
+			edIt(currNode.edges.cend()); currIt != edIt; ++currIt)
+		{
+
+		}
+
+		if (--thisDepth == 0)
+		{
+			thisDepth = nodes.size();
+			++depth;
+		}
 	}
 }

@@ -61,6 +61,12 @@ std::vector<bool> Graph::getNodesBoolTable() const
 	return nodeBoolTable;
 }
 
+UIntTable Graph::getNodesUIntTable() const
+{
+	static UIntTable nodesUIntTable(nodes.size(), 0);
+	return nodesUIntTable;
+}
+
 std::vector<bool> Graph::getEdgesBoolTable() const
 {
 	static BoolTable edgesBoolTable(edges.size(), false);

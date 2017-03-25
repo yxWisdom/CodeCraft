@@ -8,7 +8,7 @@ struct Solution
 	FlowSolution flowSolution;
 	std::vector<unsigned int> servers; // node id
 
-	std::string to_string() const;
+	std::string to_string(const Graph &g) const;
 };
 
 namespace GeneticAlgorithm

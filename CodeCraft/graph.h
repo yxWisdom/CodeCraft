@@ -13,10 +13,13 @@ struct Node;
 struct Graph;
 
 using BoolTable = std::vector<bool>;
+using UIntTable = std::vector<unsigned int>;
 
 struct EdgePreTreatmentInfo
 {
 	std::unordered_map<unsigned int, unsigned int> maxFlowToNeedPoint;
+	std::unordered_map<unsigned int, unsigned int> minCostOfMaxFlowToNeedPoint;
+	bool falg = true;
 };
 
 struct Edge
@@ -29,11 +32,15 @@ struct Edge
 	unsigned int costPerFlow = 0;
 	Edge * reverseEdge;
 	std::pair<Node *, Node *> nodes = std::make_pair(nullptr, nullptr);
+
+	EdgePreTreatmentInfo preTreatInfo;
 };
 
 struct NodePreTreatmentInfo
 {
-
+	std::unordered_map<unsigned int, unsigned int> maxFlowToNeedPoint;
+	std::unordered_map<unsigned int, unsigned int> minCostOfMaxFlowToNeedPoint;
+	std::unordered_map<unsigned int, unsigned int> BFSDepth;
 };
 
 struct Node
@@ -46,6 +53,8 @@ struct Node
 	bool isNeed = false;
 	unsigned int needOrder = 0;
 	unsigned int need = 0;
+
+	NodePreTreatmentInfo preTreatInfo;
 };
 
 struct Graph
@@ -53,6 +62,7 @@ struct Graph
 	Graph() {}
 	Graph(char * topo[MAX_EDGE_NUM]);
 	BoolTable getNodesBoolTable() const;
+	UIntTable getNodesUIntTable() const;
 	BoolTable getEdgesBoolTable() const;
 
 	std::vector<std::shared_ptr<Node>> nodes;

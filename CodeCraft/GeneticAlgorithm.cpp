@@ -33,7 +33,9 @@ std::string Solution::to_string() const
 
 Solution GeneticAlgorithm::generateSolution(std::vector<BoolTable> intialSolutions, const Graph & g)
 {
-	// to do
+	if (intialSolutions.empty())
+		return std::move(Solution());
 
+	// to do
 	return std::move(Solution());
 }

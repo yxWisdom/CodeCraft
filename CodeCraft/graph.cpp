@@ -19,12 +19,13 @@ Graph::Graph(char * topo[MAX_EDGE_NUM])
 	}
 
 	// ´´½¨±ß¼¯
+	unsigned edgeCounter(-1);
 	for (unsigned int i(4), j(i + edgeNum); i != j; ++i)
 	{
 		unsigned int node1, node2, flow, costPerFlow;
 		sscanf(topo[i], "%u %u %u %u", &node1, &node2, &flow, &costPerFlow);
 
-		Node * pNode1(nodes[node1].get()), *pNode2(nodes[node2].get());
+		Node *pNode1(nodes[node1].get()), *pNode2(nodes[node2].get());
 		Edge *edge1, *edge2;
 
 		edges.push_back(std::shared_ptr<Edge>(new Edge(flow, costPerFlow, pNode1, pNode2)));
@@ -33,7 +34,9 @@ Graph::Graph(char * topo[MAX_EDGE_NUM])
 		edge2 = edges.back().get();
 		
 		edge1->reverseEdge = edge2;
+		edge1->id = ++edgeCounter;
 		edge2->reverseEdge = edge1;
+		edge2->id = ++edgeCounter;
 		pNode1->edges.insert(std::make_pair(node2, edge1));
 		pNode2->edges.insert(std::make_pair(node1, edge2));
 	}
@@ -45,6 +48,7 @@ Graph::Graph(char * topo[MAX_EDGE_NUM])
 		sscanf(topo[i], "%u %u %u", &order, &node, &need);
 		Node * thisNode(nodes[node].get());
 		thisNode->isNeed = true;
+		thisNode->needOrder = order;
 		thisNode->need = need;
 
 		needPoints.insert(node);

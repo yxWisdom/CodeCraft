@@ -14,6 +14,11 @@ struct Graph;
 
 using BoolTable = std::vector<bool>;
 
+struct EdgePreTreatmentInfo
+{
+	std::unordered_map<unsigned int, unsigned int> maxFlowToNeedPoint;
+};
+
 struct Edge
 {
 	Edge() {}
@@ -26,11 +31,9 @@ struct Edge
 	std::pair<Node *, Node *> nodes = std::make_pair(nullptr, nullptr);
 };
 
-struct NeedInfo
+struct NodePreTreatmentInfo
 {
-	std::unordered_map<unsigned int, unsigned int> maxFlowToNeedPoint;
-	std::unordered_map<unsigned int, unsigned int> minCostOfMaxFlowRouteToNeedPoint;
-	std::unordered_map<unsigned int, unsigned int> nextPointOfMinCostRouteToNeedPoint;
+
 };
 
 struct Node
@@ -41,9 +44,8 @@ struct Node
 	std::unordered_map<unsigned int, Edge *> edges;
 	
 	bool isNeed = false;
+	unsigned int needOrder = 0;
 	unsigned int need = 0;
-
-	NeedInfo needInfo;
 };
 
 struct Graph

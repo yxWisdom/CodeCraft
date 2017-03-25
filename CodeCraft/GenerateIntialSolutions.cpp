@@ -21,24 +21,9 @@ void GenerateIntialSolutions::SubFun::BFSPretreatFrom(Node *bgNode, Graph &g)
 	unsigned int bgNodeId(bgNode->id);
 	BoolTable hasVisited(g.getNodesBoolTable());
 	hasVisited[bgNodeId] = true;
-	bgNode->needInfo.maxFlowToNeedPoint.insert(bgNodeId, bgNode->need);
-	bgNode->needInfo.minCostOfMaxFlowRouteToNeedPoint.insert(bgNodeId, 0u);
 
 	std::deque<Node *> nodes;
 	while (!nodes.empty())
 	{
-		Node &currNode(*nodes.front());
-		nodes.pop_front();
-		if (hasVisited[currNode.id])
-			continue;
-		hasVisited[currNode.id] = true;
-		if (currNode.isNeed)
-			continue;
-		
-		for (std::unordered_map<unsigned int, Edge *>::const_iterator currIt(currNode.edges.cbegin()),
-				edIt(currNode.edges.cend()); currIt != edIt; ++currIt)
-		{
-			
-		}
 	}
 }

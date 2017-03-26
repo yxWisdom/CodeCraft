@@ -67,6 +67,12 @@ UIntTable Graph::getNodesUIntTable() const
 	return nodesUIntTable;
 }
 
+IntTable Graph::getNodesIntTable() const
+{
+	static IntTable nodesIntTable(nodes.size(), 0);
+	return nodesIntTable;
+}
+
 std::vector<bool> Graph::getEdgesBoolTable() const
 {
 	static BoolTable edgesBoolTable(edges.size(), false);

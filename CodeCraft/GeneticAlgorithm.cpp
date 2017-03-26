@@ -30,7 +30,7 @@ std::string Solution::to_string(const Graph &g) const
 			}
 			else 
 			{
-				const Node const *currNode(g.nodes[currIt->serverNodeId].get());
+				const Node * const currNode(g.nodes[currIt->serverNodeId].get());
 				out << currNode->needOrder << ' ';
 			}
 			out << currIt->flow << std::endl;

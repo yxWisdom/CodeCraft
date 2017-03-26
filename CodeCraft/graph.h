@@ -14,12 +14,13 @@ struct Graph;
 
 using BoolTable = std::vector<bool>;
 using UIntTable = std::vector<unsigned int>;
+using IntTable = std::vector<int>;
 
 struct EdgeToNeedPointInfo
 {
 	unsigned int maxFlowToNeedPoint = 0;
 	unsigned int minCostOfMaxFlowToNeedPoint = -1;
-	bool flag = true;
+	bool flag = false;
 };
 
 using EdgePreTreatmentInfo = std::unordered_map<unsigned int, EdgeToNeedPointInfo>;
@@ -67,6 +68,7 @@ struct Graph
 	Graph(char * topo[MAX_EDGE_NUM]);
 	BoolTable getNodesBoolTable() const;
 	UIntTable getNodesUIntTable() const;
+	IntTable getNodesIntTable() const;
 	BoolTable getEdgesBoolTable() const;
 
 	std::vector<std::shared_ptr<Node>> nodes;

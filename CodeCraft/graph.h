@@ -15,12 +15,14 @@ struct Graph;
 using BoolTable = std::vector<bool>;
 using UIntTable = std::vector<unsigned int>;
 
-struct EdgePreTreatmentInfo
+struct EdgeToNeedPointInfo
 {
-	std::unordered_map<unsigned int, unsigned int> maxFlowToNeedPoint;
-	std::unordered_map<unsigned int, unsigned int> minCostOfMaxFlowToNeedPoint;
-	bool falg = true;
+	unsigned int maxFlowToNeedPoint = 0;
+	unsigned int minCostOfMaxFlowToNeedPoint = -1;
+	bool flag = true;
 };
+
+using EdgePreTreatmentInfo = std::unordered_map<unsigned int, EdgeToNeedPointInfo>;
 
 struct Edge
 {
@@ -36,12 +38,14 @@ struct Edge
 	EdgePreTreatmentInfo preTreatInfo;
 };
 
-struct NodePreTreatmentInfo
+struct NodeToNeedPointInfo
 {
-	std::unordered_map<unsigned int, unsigned int> maxFlowToNeedPoint;
-	std::unordered_map<unsigned int, unsigned int> minCostOfMaxFlowToNeedPoint;
-	std::unordered_map<unsigned int, unsigned int> BFSDepth;
+	unsigned int maxFlowToNeedPoint = 0;
+	unsigned int minCostOfMaxFlowToNeedPoint = -1;
+	unsigned int BFSDepth = 0;
 };
+
+using NodePreTreatmentInfo = std::unordered_map<unsigned int, NodeToNeedPointInfo>;
 
 struct Node
 {

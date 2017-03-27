@@ -13,6 +13,7 @@ Graph::Graph(char * topo[MAX_EDGE_NUM])
 	sscanf(topo[2], "%u", &(this->cost_per_service));
 
 	// 创建点集
+	++nodeNum;
 	for (unsigned int i(0); i != nodeNum; ++i)
 	{
 		nodes.push_back(std::shared_ptr<Node>(new Node(i)));
@@ -53,6 +54,8 @@ Graph::Graph(char * topo[MAX_EDGE_NUM])
 
 		needPoints.insert(node);
 	}
+
+	// 将多目的地修正为单目的地
 }
 
 std::vector<bool> Graph::getNodesBoolTable() const

@@ -13,7 +13,7 @@ Graph::Graph(char * topo[MAX_EDGE_NUM])
 	sscanf(topo[2], "%u", &(this->cost_per_service));
 
 	// 创建点集
-	++nodeNum;
+	++nodeNum; // 多目的地转单目的地的结点
 	for (unsigned int i(0); i != nodeNum; ++i)
 	{
 		nodes.push_back(std::shared_ptr<Node>(new Node(i)));
@@ -27,7 +27,7 @@ Graph::Graph(char * topo[MAX_EDGE_NUM])
 		sscanf(topo[i], "%u %u %u %u", &node1, &node2, &flow, &costPerFlow);
 
 		Node *pNode1(nodes[node1].get()), *pNode2(nodes[node2].get());
-		Edge *edge1, *edge2;
+		Edge *edge1(nullptr), *edge2(nullptr);
 
 		edges.push_back(std::shared_ptr<Edge>(new Edge(flow, costPerFlow, pNode1, pNode2)));
 		edge1 = edges.back().get();
@@ -43,6 +43,7 @@ Graph::Graph(char * topo[MAX_EDGE_NUM])
 	}
 
 	// 读取需求点集
+	Node * edNode(nodes.back().get());
 	for (unsigned int i(4 + edgeNum + 1), j(i + needNodeNum); i != j; ++i)
 	{
 		unsigned int order, node, need;
@@ -53,9 +54,13 @@ Graph::Graph(char * topo[MAX_EDGE_NUM])
 		thisNode->need = need;
 
 		needPoints.insert(node);
-	}
 
-	// 将多目的地修正为单目的地
+		// 将多目的地修正为单目的地
+		Edge * thisEdge(nullptr);
+		edges.push_back(std::shared_ptr<Edge>(new Edge(need, 0, thisNode, edNode)));
+		thisEdge = edges.back().get();
+		thisNode->edges.insert(std::make_pair(edNode->id, thisEdge));
+	}
 }
 
 std::vector<bool> Graph::getNodesBoolTable() const

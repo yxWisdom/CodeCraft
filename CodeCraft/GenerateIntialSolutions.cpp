@@ -44,8 +44,7 @@ void GenerateIntialSolutions::SubFun::BFSPretreatFrom(Node *bgNode, Graph &g)
 		EdgeToNeedPointInfo &reverseEdgeToNeedPointInfo(reverseEdge->preTreatInfo.find(bgNodeId)->second);
 
 		reverseEdgeToNeedPointInfo.flag = true;
-		reverseEdgeToNeedPointInfo.maxFlowToNeedPoint = std::min(
-			std::initializer_list<unsigned int>{maxNeed, reverseEdge->flow});
+		reverseEdgeToNeedPointInfo.maxFlowToNeedPoint = maxNeed > reverseEdge->flow ? reverseEdge->flow : maxNeed;
 		reverseEdgeToNeedPointInfo.minCostOfMaxFlowToNeedPoint =
 			reverseEdgeToNeedPointInfo.maxFlowToNeedPoint * reverseEdge->costPerFlow;
 
@@ -109,18 +108,44 @@ void GenerateIntialSolutions::SubFun::BFSPretreatFrom(Node *bgNode, Graph &g)
 			/* Second Step:                                                         */
 			/* Judge the edges is needed between same depth                         */
 			/************************************************************************/
-
-			for (std::unordered_map<unsigned int, Edge *>::const_iterator currIt(currNode.edges.cbegin()),
-				edIt(currNode.edges.cend()); currIt != edIt; ++currIt)
+			if (flowDistance[currNode.id] < 0)
 			{
-				Node *anoNode(currIt->second->nodes.second);
+				for (std::unordered_map<unsigned int, Edge *>::const_iterator currIt(currNode.edges.cbegin()),
+					edIt(currNode.edges.cend()); currIt != edIt; ++currIt)
+				{
+					Node *anoNode(currIt->second->nodes.second);
+					if (nodeDepth[anoNode->id] == depth && flowDistance[anoNode->id] > 0)
+					{
+						Edge *reverseEdge(currIt->second->reverseEdge);
+						reverseEdge->preTreatInfo.insert(std::make_pair(bgNodeId, EdgeToNeedPointInfo()));
+						EdgeToNeedPointInfo &reverseEdgeToNeedPointInfo(reverseEdge->preTreatInfo.find(bgNodeId)->second);
 
+						unsigned int flowDistanceUInt(-flowDistance[currNode.id]);
+						reverseEdgeToNeedPointInfo.flag = true;
+						reverseEdgeToNeedPointInfo.maxFlowToNeedPoint = std::min(std::initializer_list<unsigned int>
+							{flowDistanceUInt, reverseEdge->flow, (unsigned int)flowDistance[anoNode->id]});
+
+						unsigned int addedCost(reverseEdgeToNeedPointInfo.maxFlowToNeedPoint * reverseEdge->costPerFlow);
+						reverseEdgeToNeedPointInfo.minCostOfMaxFlowToNeedPoint =
+							currNodeToNeedPointInfo.minCostOfMaxFlowToNeedPoint + addedCost;
+						
+						NodeToNeedPointInfo &anoNodeToNeedPointInfo(anoNode->preTreatInfo.find(bgNodeId)->second);
+						// 也不应该直接加，应该要判断一下是否大于maxNeed
+						anoNodeToNeedPointInfo.maxFlowToNeedPoint += reverseEdgeToNeedPointInfo.maxFlowToNeedPoint;
+						// how to cal the min cost?
+					}
+				}
 			}
 
 			/************************************************************************/
 			/* Third Step:                                                          */
 			/* Judge the reverse edges                                              */
 			/************************************************************************/
+			for (std::unordered_map<unsigned int, Edge *>::const_iterator currIt(currNode.edges.cbegin()),
+				edIt(currNode.edges.cend()); currIt != edIt; ++currIt)
+			{
+
+			}
 		}
 
 		nodes.erase(nodes.begin(), nodes.begin() + thisDepth);

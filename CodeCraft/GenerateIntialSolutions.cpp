@@ -277,3 +277,28 @@ void GenerateIntialSolutions::SubFun::BFSPretreatFrom(Node *bgNode, Graph &g)
 		++depth;
 	}
 }
+
+std::vector<BoolTable> GenerateIntialSolutions::SubFun::generateIntialSolutionsG(const Graph & g)
+{
+	std::vector<BoolTable> intialSolutions;
+	std::unordered_map<unsigned int, unsigned int> flows;
+	for (std::unordered_set<unsigned int>::const_iterator currIt(g.needPoints.cbegin()), edIt(g.needPoints.cend());
+		currIt != edIt; ++currIt)
+		flows.insert(std::make_pair(*currIt, 0));
+
+	std::vector<Node *> nodes(g.nodes.size(), nullptr);
+	for (unsigned int i(0), j(nodes.size()); i != j; ++i)
+		nodes[i] = g.nodes[i].get();
+	std::sort(nodes.begin(), nodes.end(), [](const Node * const pNodeA, const Node * const pNodeB)
+	{
+
+	});
+
+	DFSSelectServers(g.getNodesBoolTable(), flows, nodes, intialSolutions);
+	return std::move(intialSolutions);
+}
+
+void GenerateIntialSolutions::SubFun::DFSSelectServers(BoolTable currTable, std::unordered_map<unsigned int, unsigned int> flows, 
+	const std::vector<Node *> &nodes, std::vector<BoolTable>& intialSolutions)
+{
+}

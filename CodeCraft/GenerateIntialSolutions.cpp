@@ -20,11 +20,13 @@ void GenerateIntialSolutions::SubFun::pretreat(Graph & g)
 void GenerateIntialSolutions::SubFun::BFSPretreatFrom(Node *bgNode, Graph &g)
 {
 	unsigned int bgNodeId(bgNode->id);
+	unsigned int edNodeId(g.nodes.size() - 1);
 	unsigned int maxNeed(bgNode->need);
 	UIntTable nodeDepth(g.getNodesUIntTable());
 	IntTable flowDistance(g.getNodesIntTable());
 
-	nodeDepth[bgNodeId] = 1;
+	nodeDepth[bgNodeId] = 2;
+	nodeDepth[edNodeId] = 1;
 	bgNode->preTreatInfo.insert(std::make_pair(bgNodeId, NodeToNeedPointInfo()));
 	NodeToNeedPointInfo &bgNodePreTreatInfo(bgNode->preTreatInfo.find(bgNodeId)->second);
 	bgNodePreTreatInfo.maxFlowToNeedPoint = maxNeed;
@@ -35,11 +37,14 @@ void GenerateIntialSolutions::SubFun::BFSPretreatFrom(Node *bgNode, Graph &g)
 	for (std::unordered_map<unsigned int, Edge *>::const_iterator currIt(bgNode->edges.cbegin()),
 		edIt(bgNode->edges.cend()); currIt != edIt; ++currIt)
 	{
+		Edge *reverseEdge(currIt->second->reverseEdge);
+		if (reverseEdge == nullptr)
+			continue;
+
 		Node *anoNode(currIt->second->nodes.second);
-		nodeDepth[anoNode->id] = 1;
+		nodeDepth[anoNode->id] = 3;
 		nodes.push_back(anoNode);
 		
-		Edge *reverseEdge(currIt->second->reverseEdge);
 		reverseEdge->preTreatInfo.insert(std::make_pair(bgNodeId, EdgeToNeedPointInfo()));
 		EdgeToNeedPointInfo &reverseEdgeToNeedPointInfo(reverseEdge->preTreatInfo.find(bgNodeId)->second);
 
@@ -50,7 +55,7 @@ void GenerateIntialSolutions::SubFun::BFSPretreatFrom(Node *bgNode, Graph &g)
 
 		anoNode->preTreatInfo.insert(std::make_pair(bgNodeId, NodeToNeedPointInfo()));
 		NodeToNeedPointInfo &anoNodeToNeedPointInfo(anoNode->preTreatInfo.find(bgNodeId)->second);
-		anoNodeToNeedPointInfo.BFSDepth = 1;
+		anoNodeToNeedPointInfo.BFSDepth = 3;
 		anoNodeToNeedPointInfo.maxFlowToNeedPoint = reverseEdgeToNeedPointInfo.maxFlowToNeedPoint;
 		anoNodeToNeedPointInfo.minCostOfMaxFlowToNeedPoint = reverseEdgeToNeedPointInfo.minCostOfMaxFlowToNeedPoint;
 
@@ -58,7 +63,7 @@ void GenerateIntialSolutions::SubFun::BFSPretreatFrom(Node *bgNode, Graph &g)
 	}
 	flowDistance[bgNodeId] = flowIn;
 	
-	unsigned int depth(1), thisDepth(1);
+	unsigned int depth(3);
 	while (!nodes.empty())
 	{
 		unsigned int thisDepth(nodes.size());
@@ -146,28 +151,54 @@ void GenerateIntialSolutions::SubFun::BFSPretreatFrom(Node *bgNode, Graph &g)
 
 			if (flowDistance[currNode.id] > 0)
 			{
-				unsigned int flowOutToSameDepth(0);
 				std::vector<Edge *> flowOutEdgeOfSameDepth;
 				for (std::unordered_map<unsigned int, Edge *>::const_iterator currIt(currNode.edges.cbegin()),
 					edIt(currNode.edges.cend()); currIt != edIt; ++currIt)
 				{
-					EdgeToNeedPointInfo &thisEdgeToNeedPointInfo(currIt->second->preTreatInfo.find(bgNodeId)->second);
-					if (thisEdgeToNeedPointInfo.flag)
+					Node *anoNode(currIt->second->nodes.second);
+
+					if (nodeDepth[anoNode->id] == depth && flowDistance[anoNode->id] < 0)
 					{
-						flowOutEdgeOfSameDepth.push_back(currIt->second);
-						flowOutToSameDepth += thisEdgeToNeedPointInfo.maxFlowToNeedPoint;
+						EdgeToNeedPointInfo &thisEdgeToNeedPointInfo(currIt->second->preTreatInfo.find(bgNodeId)->second);
+						if (thisEdgeToNeedPointInfo.flag)
+							flowOutEdgeOfSameDepth.push_back(currIt->second);
 					}
 				}
 
-				std::sort(flowOutEdgeOfSameDepth.begin(), flowOutEdgeOfSameDepth.end(), 
-					[bgNodeId](const Edge const * pEdgeA, const Edge const *pEdgeB)->bool
+				if (!flowOutEdgeOfSameDepth.empty())
 				{
-					return pEdgeA->preTreatInfo.find(bgNodeId)->second.minCostOfMaxFlowToNeedPoint 
-						< pEdgeB->preTreatInfo.find(bgNodeId)->second.minCostOfMaxFlowToNeedPoint;
-				});
+					std::sort(flowOutEdgeOfSameDepth.begin(), flowOutEdgeOfSameDepth.end(),
+						[bgNodeId](const Edge * const pEdgeA, const Edge * const pEdgeB)->bool
+					{
+						return pEdgeA->preTreatInfo.find(bgNodeId)->second.minCostOfMaxFlowToNeedPoint
+							< pEdgeB->preTreatInfo.find(bgNodeId)->second.minCostOfMaxFlowToNeedPoint;
+					});
 
-				// allocate the flow and calculate the min cost
-				// record in the node pretreat information
+					unsigned int restFlow(flowDistance[currNode.id]), addedCost(0);
+					for (std::vector<Edge *>::const_iterator currIt(flowOutEdgeOfSameDepth.cbegin()),
+						edIt(flowOutEdgeOfSameDepth.cend()); currIt != edIt; ++currIt)
+					{
+						Edge *thisEdge(*currIt);
+						EdgeToNeedPointInfo &thisEdgeToNeedPointInfo(thisEdge->preTreatInfo.find(bgNodeId)->second);
+
+						unsigned int usedFlow(0);
+						if (restFlow > thisEdgeToNeedPointInfo.maxFlowToNeedPoint)
+						{
+							usedFlow = thisEdgeToNeedPointInfo.maxFlowToNeedPoint;
+							restFlow -= usedFlow;
+							addedCost += thisEdge->costPerFlow * usedFlow;
+						}
+						else 
+						{
+							usedFlow = restFlow;
+							restFlow = 0;
+							addedCost += thisEdge->costPerFlow * usedFlow;
+							break;
+						}
+					}
+					currNodeToNeedPointInfo.maxFlowToNeedPoint += flowDistance[currNode.id] - restFlow;
+					currNodeToNeedPointInfo.minCostOfMaxFlowToNeedPoint += addedCost;
+				}
 			}
 		}
 
@@ -175,7 +206,6 @@ void GenerateIntialSolutions::SubFun::BFSPretreatFrom(Node *bgNode, Graph &g)
 		/* Third Step:                                                          */
 		/* Judge the reverse edges                                              */
 		/************************************************************************/
-		
 		for (unsigned int i(0); i != thisDepth; ++i)
 		{
 			Node &currNode(*nodes[i]);
@@ -184,8 +214,63 @@ void GenerateIntialSolutions::SubFun::BFSPretreatFrom(Node *bgNode, Graph &g)
 			for (std::unordered_map<unsigned int, Edge *>::const_iterator currIt(currNode.edges.cbegin()),
 				edIt(currNode.edges.cend()); currIt != edIt; ++currIt)
 			{
+				Node *anoNode(currIt->second->nodes.second);
 
+				if (nodeDepth[anoNode->id] > depth)
+				{
+					Edge *reverseEdge(currIt->second->reverseEdge);
+					EdgeToNeedPointInfo &reverseEdgeToNeedPointInfo(reverseEdge->preTreatInfo.find(bgNodeId)->second);
+
+					unsigned int flow = currNodeToNeedPointInfo.maxFlowToNeedPoint > reverseEdge->flow ? 
+						reverseEdge->flow : currNodeToNeedPointInfo.maxFlowToNeedPoint;
+					unsigned int cost = currNodeToNeedPointInfo.minCostOfMaxFlowToNeedPoint * flow /
+						currNodeToNeedPointInfo.maxFlowToNeedPoint + flow * reverseEdge->costPerFlow;
+
+					reverseEdgeToNeedPointInfo.maxFlowToNeedPoint = flow;
+					reverseEdgeToNeedPointInfo.minCostOfMaxFlowToNeedPoint = cost;
+				}
 			}
+		}
+
+		for (unsigned int i(thisDepth), j(nodes.size()); i != j; ++i)
+		{
+			Node &currNode(*nodes[i]);
+			NodeToNeedPointInfo &currNodeToNeedPointInfo(currNode.preTreatInfo.find(bgNodeId)->second);
+			std::vector<Edge *> edges;
+
+			for (std::unordered_map<unsigned int, Edge *>::const_iterator currIt(currNode.edges.cbegin()),
+				edIt(currNode.edges.cend()); currIt != edIt; ++currIt)
+			{
+				Node *anoNode(currIt->second->nodes.second);
+
+				if (nodeDepth[anoNode->id] == depth)
+					edges.push_back(currIt->second);
+			}
+
+			std::sort(edges.begin(), edges.end(), [bgNodeId](const Edge * const pEdgeA, const Edge * const pEdgeB)
+			{
+				const EdgeToNeedPointInfo &edgeAToNeedPointInfo(pEdgeA->preTreatInfo.find(bgNodeId)->second);
+				const EdgeToNeedPointInfo &edgeBToNeedPointInfo(pEdgeB->preTreatInfo.find(bgNodeId)->second);
+				return edgeAToNeedPointInfo.minCostOfMaxFlowToNeedPoint / edgeAToNeedPointInfo.maxFlowToNeedPoint <
+					edgeBToNeedPointInfo.minCostOfMaxFlowToNeedPoint / edgeBToNeedPointInfo.maxFlowToNeedPoint;
+			});
+
+			unsigned int restFlow(maxNeed), totalCost(0);
+			for (unsigned int i(0), j(edges.size()); i != j; ++i)
+			{
+				const EdgeToNeedPointInfo &edgeToNeedPointInfo(edges[i]->preTreatInfo.find(bgNodeId)->second);
+				if (restFlow < edgeToNeedPointInfo.maxFlowToNeedPoint)
+				{
+					totalCost += edgeToNeedPointInfo.minCostOfMaxFlowToNeedPoint 
+						* restFlow / edgeToNeedPointInfo.maxFlowToNeedPoint;
+					restFlow = 0;
+					break;
+				}
+				totalCost += edgeToNeedPointInfo.minCostOfMaxFlowToNeedPoint;
+				restFlow -= edgeToNeedPointInfo.maxFlowToNeedPoint;
+			}
+			currNodeToNeedPointInfo.maxFlowToNeedPoint = maxNeed - restFlow;
+			currNodeToNeedPointInfo.minCostOfMaxFlowToNeedPoint = totalCost;
 		}
 
 		nodes.erase(nodes.begin(), nodes.begin() + thisDepth);

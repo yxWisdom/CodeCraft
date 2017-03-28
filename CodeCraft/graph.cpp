@@ -59,6 +59,7 @@ Graph::Graph(char * topo[MAX_EDGE_NUM])
 		Edge * thisEdge(nullptr);
 		edges.push_back(std::shared_ptr<Edge>(new Edge(need, 0, thisNode, edNode)));
 		thisEdge = edges.back().get();
+		thisEdge->reverseEdge = nullptr;
 		thisNode->edges.insert(std::make_pair(edNode->id, thisEdge));
 	}
 }

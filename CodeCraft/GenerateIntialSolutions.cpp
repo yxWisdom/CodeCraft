@@ -399,10 +399,11 @@ BoolTable GenerateIntialSolutions::SubFun::generateServerCombination(const std::
 		if (thisNode > 0 && thisNode <= nodes.size())
 		{
 			const Node * const currNode(nodes[thisNode - 1]);
+			thisNode = currNode->id;
 
-			if (!solution[thisNode - 1] && judgeNodeIsNeeded(flowTable, currNode))
+			if (!solution[thisNode] && judgeNodeIsNeeded(flowTable, currNode))
 			{
-				solution[thisNode - 1] = true;
+				solution[thisNode] = true;
 
 				for (std::unordered_map<unsigned int, NodeToNeedPointInfo>::const_iterator currIt(currNode->preTreatInfo.cbegin()),
 					edIt(currNode->preTreatInfo.cend()); currIt != edIt; ++currIt)

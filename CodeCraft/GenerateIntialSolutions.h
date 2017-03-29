@@ -12,9 +12,12 @@ namespace GenerateIntialSolutions
 	{
 		void pretreat(Graph &g);
 		void BFSPretreatFrom(Node *bgNode, Graph &g);
+		double calNodeScore(const Node * const pNode);
 
-		std::vector<BoolTable> generateIntialSolutionsG(const Graph &g);
-		void DFSSelectServers(BoolTable currTable, std::unordered_map<unsigned int, unsigned int> flows, 
-			const std::vector<Node *> &nodes, std::vector<BoolTable> &intialSolutions);
+		std::vector<BoolTable> generateIntialSolutions(const Graph &g);
+		std::vector<BoolTable> selectServers(const std::vector<Node *> &nodes, const Graph &g);
+		BoolTable generateServerCombination(const std::vector<Node *> &nodes, const Graph &g);
+
+		double calSolutionCost(BoolTable &currSolution, const Graph &g);
 	};
 };

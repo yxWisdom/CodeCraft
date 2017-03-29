@@ -43,7 +43,10 @@ struct NodeToNeedPointInfo
 {
 	unsigned int maxFlowToNeedPoint = 0;
 	unsigned int minCostOfMaxFlowToNeedPoint = -1;
+
 	unsigned int BFSDepth = 0;
+
+	bool flag = true;
 };
 
 using NodePreTreatmentInfo = std::unordered_map<unsigned int, NodeToNeedPointInfo>;
@@ -60,6 +63,10 @@ struct Node
 	unsigned int need = 0;
 
 	NodePreTreatmentInfo preTreatInfo;
+	// the score bigger, the node better
+	// score = flow(bigger) * costPerFlow(smaller) * enabledNeedNodeNumber(bigger)
+	// score = flow * flow / cost * enabledNodeNumber
+	double preTreatScore = 0; 
 };
 
 struct Graph
@@ -73,7 +80,7 @@ struct Graph
 
 	std::vector<std::shared_ptr<Node>> nodes;
 	std::vector<std::shared_ptr<Edge>> edges;
-	unsigned int cost_per_service = 0;
+	unsigned int costPerServer = 0;
 
 	std::unordered_set<unsigned int> needPoints;
 };

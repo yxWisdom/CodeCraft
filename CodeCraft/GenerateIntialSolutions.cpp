@@ -1,20 +1,24 @@
 #include "GenerateIntialSolutions.h"
 #include <deque>
 #include <algorithm>
+#include <random>
 
 std::vector<BoolTable> GenerateIntialSolutions::getIntialSolutions(Graph & g)
 {
 	SubFun::pretreat(g);
 
-	return std::vector<BoolTable>();
+	return std::move(SubFun::generateIntialSolutions(g));
 }
 
 void GenerateIntialSolutions::SubFun::pretreat(Graph & g)
 {
-	for (unsigned int needPoint : g.needPoints)
-	{
-		BFSPretreatFrom(g.nodes[needPoint].get(), g);
-	}
+	for (std::unordered_set<unsigned int>::const_iterator currIt(g.needPoints.cbegin()),
+		edIt(g.needPoints.cend()); currIt != edIt; ++currIt)
+		BFSPretreatFrom(g.nodes[*currIt].get(), g);
+
+	for (std::vector<std::shared_ptr<Node>>::iterator currIt(g.nodes.begin()), edIt(g.nodes.end() - 1);
+		currIt != edIt; ++currIt)
+		currIt->get()->preTreatScore = calNodeScore(currIt->get());
 }
 
 void GenerateIntialSolutions::SubFun::BFSPretreatFrom(Node *bgNode, Graph &g)
@@ -276,4 +280,223 @@ void GenerateIntialSolutions::SubFun::BFSPretreatFrom(Node *bgNode, Graph &g)
 		nodes.erase(nodes.begin(), nodes.begin() + thisDepth);
 		++depth;
 	}
+
+	for (std::vector<std::shared_ptr<Node>>::iterator currIt(g.nodes.begin()), edIt(g.nodes.end() - 1);
+		currIt != edIt; ++currIt)
+	{
+		NodeToNeedPointInfo &currNodeToNeedPointInfo((*currIt)->preTreatInfo.find(bgNodeId)->second);
+
+		if (currNodeToNeedPointInfo.minCostOfMaxFlowToNeedPoint >= g.costPerServer)
+			currNodeToNeedPointInfo.flag = false;
+	}
+}
+
+double GenerateIntialSolutions::SubFun::calNodeScore(const Node * const pNode)
+{
+	const NodePreTreatmentInfo &preTreatmentInfo(pNode->preTreatInfo);
+
+	unsigned int enabledNodeNumber(0);
+	double score(0);
+	for (std::unordered_map<unsigned int, NodeToNeedPointInfo>::const_iterator currIt(preTreatmentInfo.cbegin()),
+		edIt(preTreatmentInfo.cend()); currIt != edIt; ++currIt)
+	{
+		const NodeToNeedPointInfo &nodeToNeedPointInfo(currIt->second);
+		if (nodeToNeedPointInfo.flag)
+		{
+			++enabledNodeNumber;
+			if (nodeToNeedPointInfo.minCostOfMaxFlowToNeedPoint != 0)
+				score += pow(nodeToNeedPointInfo.maxFlowToNeedPoint, 2)
+					/ nodeToNeedPointInfo.minCostOfMaxFlowToNeedPoint;
+		}
+	}
+
+	return score * enabledNodeNumber;
+}
+
+std::vector<BoolTable> GenerateIntialSolutions::SubFun::generateIntialSolutions(const Graph & g)
+{
+	std::vector<Node *> nodes(g.nodes.size() - 1, nullptr);
+	for (unsigned int i(0), j(nodes.size()); i != j; ++i)
+		nodes[i] = g.nodes[i].get();
+
+	std::sort(nodes.begin(), nodes.end(), [](const Node * const pNodeA, const Node * const pNodeB)
+	{
+		return pNodeA->preTreatScore > pNodeB->preTreatScore;
+	});
+
+	return std::move(selectServers(nodes, g));
+}
+
+std::vector<BoolTable> GenerateIntialSolutions::SubFun::selectServers(const std::vector<Node *> &nodes, const Graph &g)
+{
+	std::vector<std::pair<BoolTable, double>> intialSolutionWithScore;
+	unsigned int targetSolutionNumber(solutionNum * g.nodes.size() / g.needPoints.size());
+
+	while (intialSolutionWithScore.size() != targetSolutionNumber)
+	{
+		BoolTable solution(generateServerCombination(nodes, g));
+		double score(calSolutionCost(solution, g));
+
+		bool solutionIsExisted(std::find_if(intialSolutionWithScore.cbegin(),
+			intialSolutionWithScore.cend(), [solution](const std::pair<BoolTable, double> &solutionPair)->bool
+		{
+			return solutionPair.first == solution;
+		}) != intialSolutionWithScore.cend());
+		if (!solutionIsExisted)
+			intialSolutionWithScore.push_back(std::make_pair(std::move(solution), score));
+	}
+
+	std::sort(intialSolutionWithScore.begin(), intialSolutionWithScore.end(),
+		[](const std::pair<BoolTable, double> &solutionA, const std::pair<BoolTable, double> &solutionB)->bool
+	{
+		return solutionA.second < solutionB.second;
+	});
+
+	std::vector<BoolTable> intialSolutions;
+	for (unsigned int i(0); i != solutionNum; ++i)
+	{
+		intialSolutions.push_back(std::move(intialSolutionWithScore[i].first));
+	}
+	return std::move(intialSolutions);
+}
+
+BoolTable GenerateIntialSolutions::SubFun::generateServerCombination(const std::vector<Node*>& nodes, const Graph &g)
+{
+	static std::random_device rd;
+	static std::mt19937 gen(rd());
+	static std::weibull_distribution<> dis(1, g.needPoints.size());
+	static auto judgeNeedIsSatisfied([](const std::unordered_map<unsigned int, unsigned int> &flowTable)->bool
+	{
+		for (std::unordered_map<unsigned int, unsigned int>::const_iterator currIt(flowTable.cbegin()), edIt(flowTable.cend());
+			currIt != edIt; ++currIt)
+		{
+			if (currIt->second != 0)
+				return false;
+		}
+		return true;
+	});
+
+	static auto judgeNodeIsNeeded([&g](const std::unordered_map<unsigned int, unsigned int> &flowTable, const Node * const pNode)->bool
+	{
+		for (std::unordered_map<unsigned int, unsigned int>::const_iterator currIt(flowTable.cbegin()), edIt(flowTable.cend());
+			currIt != edIt; ++currIt)
+		{
+			if (currIt->second != 0 && pNode->preTreatInfo.find(currIt->first)->second.flag)
+				return true;
+		}
+		return false;
+	});
+
+	std::unordered_map<unsigned int, unsigned int> flowTable;
+	for (std::unordered_set<unsigned int>::const_iterator currIt(g.needPoints.begin()), edIt(g.needPoints.end());
+		currIt != edIt; ++currIt)
+		flowTable.insert(std::make_pair(*currIt, g.nodes[*currIt].get()->need));
+	BoolTable solution(g.getNodesBoolTable());
+
+	for(;;)
+	{
+		unsigned int thisNode(std::round(dis(gen)));
+		if (thisNode > 0 && thisNode <= nodes.size())
+		{
+			const Node * const currNode(nodes[thisNode - 1]);
+			thisNode = currNode->id;
+
+			if (!solution[thisNode] && judgeNodeIsNeeded(flowTable, currNode))
+			{
+				solution[thisNode] = true;
+
+				for (std::unordered_map<unsigned int, NodeToNeedPointInfo>::const_iterator currIt(currNode->preTreatInfo.cbegin()),
+					edIt(currNode->preTreatInfo.cend()); currIt != edIt; ++currIt)
+				{
+					if (currIt->second.flag)
+					{
+						if (flowTable.find(currIt->first)->second > currIt->second.maxFlowToNeedPoint)
+							flowTable.find(currIt->first)->second -= currIt->second.maxFlowToNeedPoint;
+						else
+							flowTable.find(currIt->first)->second = 0;
+					}
+				}
+
+				if (judgeNeedIsSatisfied(flowTable))
+					break;
+			}
+		}
+	}
+
+	return std::move(solution);
+}
+
+double GenerateIntialSolutions::SubFun::calSolutionCost(BoolTable & currSolution, const Graph & g)
+{
+	double cost(0);
+
+	std::unordered_map<unsigned int, std::vector<std::pair<unsigned int, const NodeToNeedPointInfo *>>> costInfos;
+	std::unordered_map<unsigned int, bool> flowUsed;
+
+	for (std::unordered_set<unsigned int>::const_iterator currIt(g.needPoints.begin()), edIt(g.needPoints.end());
+		currIt != edIt; ++currIt)
+		costInfos.insert(std::make_pair(*currIt, std::vector<std::pair<unsigned int, const NodeToNeedPointInfo *>>()));
+
+	for (unsigned int i(0), j(currSolution.size()); i != j; ++i)
+	{
+		if (currSolution[i])
+		{
+			const Node * const currNode(g.nodes[i].get());
+			flowUsed.insert(std::make_pair(currNode->id, false));
+			for (std::unordered_map<unsigned int, NodeToNeedPointInfo>::const_iterator currIt(currNode->preTreatInfo.cbegin()),
+				edIt(currNode->preTreatInfo.cend()); currIt != edIt; ++currIt)
+			{
+				costInfos.find(currIt->first)->second.push_back(std::make_pair(currNode->id, &(currIt->second)));
+			}
+		}
+	}
+	
+	for (std::unordered_map<unsigned int, std::vector<std::pair<unsigned int, const NodeToNeedPointInfo *>>>::iterator
+		currIt(costInfos.begin()), edIt(costInfos.end()); currIt != edIt; ++currIt)
+	{
+		unsigned int currNeedPointId(currIt->first);
+		unsigned int need(g.nodes[currNeedPointId]->need);
+		std::vector<std::pair<unsigned int, const NodeToNeedPointInfo *>> &costInfos(currIt->second);
+
+		std::sort(costInfos.begin(), costInfos.end(),
+			[](const std::pair<unsigned int, const NodeToNeedPointInfo *> &costInfoA, 
+				const std::pair<unsigned int, const NodeToNeedPointInfo *> &costInfoB) -> bool
+		{
+			const NodeToNeedPointInfo * const infoA(costInfoA.second);
+			const NodeToNeedPointInfo * const infoB(costInfoB.second);
+			return infoA->flag &&
+				(double)infoA->minCostOfMaxFlowToNeedPoint / infoA->maxFlowToNeedPoint <
+				(double)infoB->minCostOfMaxFlowToNeedPoint / infoB->maxFlowToNeedPoint;
+		});
+
+		for (unsigned int i(0), j(costInfos.size()); i != j; ++i)
+		{
+			const NodeToNeedPointInfo * const currInfo(costInfos[i].second);
+			flowUsed.find(costInfos[i].first)->second = true;
+
+			if (need > currInfo->maxFlowToNeedPoint)
+			{
+				need -= currInfo->maxFlowToNeedPoint;
+				cost += currInfo->minCostOfMaxFlowToNeedPoint;
+			}
+			else 
+			{
+				cost += need * (double)currInfo->minCostOfMaxFlowToNeedPoint / currInfo->maxFlowToNeedPoint;
+				need = 0;
+				break;
+			}
+		}
+	}
+	
+	unsigned int serverNum(0);
+	for (std::unordered_map<unsigned int, bool>::const_iterator currIt(flowUsed.cbegin()),
+		edIt(flowUsed.cend()); currIt != edIt; ++currIt)
+	{
+		if (currIt->second)
+			++serverNum;
+		else
+			currSolution[currIt->first] = false;
+	}
+
+	return cost + serverNum * g.costPerServer;
 }

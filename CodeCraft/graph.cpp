@@ -10,7 +10,7 @@ Graph::Graph(char * topo[MAX_EDGE_NUM])
 {
 	unsigned int nodeNum, edgeNum, needNodeNum;
 	sscanf(topo[0], "%u %u %u", &nodeNum, &edgeNum, &needNodeNum);
-	sscanf(topo[2], "%u", &(this->cost_per_service));
+	sscanf(topo[2], "%u", &(this->costPerServer));
 
 	// 创建点集
 	++nodeNum; // 多目的地转单目的地的结点
@@ -59,6 +59,7 @@ Graph::Graph(char * topo[MAX_EDGE_NUM])
 		Edge * thisEdge(nullptr);
 		edges.push_back(std::shared_ptr<Edge>(new Edge(need, 0, thisNode, edNode)));
 		thisEdge = edges.back().get();
+		thisEdge->reverseEdge = nullptr;
 		thisNode->edges.insert(std::make_pair(edNode->id, thisEdge));
 	}
 }

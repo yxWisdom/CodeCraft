@@ -15,6 +15,7 @@ struct Graph;
 using BoolTable = std::vector<bool>;
 using UIntTable = std::vector<unsigned int>;
 using IntTable = std::vector<int>;
+using GraphMatrix = std::vector<std::vector<std::pair<int, int>>>;
 
 struct EdgeToNeedPointInfo
 {
@@ -83,4 +84,6 @@ struct Graph
 	unsigned int costPerServer = 0;
 
 	std::unordered_set<unsigned int> needPoints;
+
+	GraphMatrix graphMatrix;
 };

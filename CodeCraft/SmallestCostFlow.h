@@ -24,19 +24,12 @@ namespace SmallestCostFlow
 	{
 		void initGraph(BoolTable &server, Graph &g);
 
-		void dijkstra();
+		void dijkstra(std::vector<int> &distance, std::vector<int> &path);
 
 		void minCostMaxFlow();
 
-		void removeSourceNode();
+		//void removeSourceNode();
 
-		Graph *graph;
-		size_t nodeSize;
-		// sum of cost per flow
-		std::vector<int> distance;
-		// linked list for recording flow
-		std::vector<int> nextNode;
-		int minCost = 0;
-		FlowSolution flowSolution;
+		static FlowSolution flowSolution;
 	};
 };

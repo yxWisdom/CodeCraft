@@ -19,6 +19,9 @@ Graph::Graph(char * topo[MAX_EDGE_NUM])
 		nodes.push_back(std::shared_ptr<Node>(new Node(i)));
 	}
 
+	graphMatrix.insert(graphMatrix.begin(), nodeNum + 1,
+		std::vector<std::pair<int, int>>(nodeNum + 1, std::make_pair(0, INT_MAX)));
+
 	// 创建边集
 	unsigned edgeCounter(-1);
 	for (unsigned int i(4), j(i + edgeNum); i != j; ++i)
@@ -40,6 +43,11 @@ Graph::Graph(char * topo[MAX_EDGE_NUM])
 		edge2->id = ++edgeCounter;
 		pNode1->edges.insert(std::make_pair(node2, edge1));
 		pNode2->edges.insert(std::make_pair(node1, edge2));
+
+		graphMatrix[node1 + 1][node2 + 1].first = flow;
+		graphMatrix[node1 + 1][node2 + 1].second = costPerFlow;
+		graphMatrix[node2 + 1][node1 + 1].first = flow;
+		graphMatrix[node2 + 1][node1 + 1].second = costPerFlow;
 	}
 
 	// 读取需求点集
@@ -61,6 +69,9 @@ Graph::Graph(char * topo[MAX_EDGE_NUM])
 		thisEdge = edges.back().get();
 		thisEdge->reverseEdge = nullptr;
 		thisNode->edges.insert(std::make_pair(edNode->id, thisEdge));
+
+		graphMatrix[thisNode->id + 1][nodeNum].first = need;
+		graphMatrix[thisNode->id + 1][nodeNum].second = 0;
 	}
 }
 

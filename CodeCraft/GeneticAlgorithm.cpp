@@ -46,7 +46,7 @@ std::string Solution::to_string(const Graph &g) const
 		{
 			out << currIt->serverNodeId << ' ';
 
-			if (currIt->edges.empty())
+			if (!currIt->edges.empty())
 			{
 				for (std::vector<Edge *>::const_iterator currEdgeIt(currIt->edges.cbegin()),
 					edEdgeIt(currIt->edges.cend()); currEdgeIt != edEdgeIt; ++currEdgeIt)
